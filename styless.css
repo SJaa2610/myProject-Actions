@@ -1,0 +1,19 @@
+body{
+    margin: 0;
+    background-color: rgb(189, 227, 237);
+}
+
+div{
+    margin: auto;
+    margin-top: 10%;
+    margin-bottom: 10%;
+    width: 25%;
+    height: 30%;
+    padding: 5%;
+    border: 2px solid black;
+    
+}
+
+h1{
+    border-top: 2px solid black;
+}
