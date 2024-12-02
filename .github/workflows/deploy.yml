@@ -1,0 +1,43 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # Ejecutar el flujo cuando haya cambios en la rama main.
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Descargar el código del repositorio
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Configurar conexión SSH
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}  # Llave privada cargada como secreto en GitHub.
+
+    # 3. Conectar y desplegar en la instancia EC2
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ec2-user@3.80.221.241 << 'EOF'
+        # Detener cualquier contenedor previo
+        docker stop $(docker ps -q) || true
+        docker rm $(docker ps -a -q) || true
+        
+        # Actualizar el repositorio o clonarlo si no existe
+        cd /home/ec2-user || mkdir /home/ec2-user && cd /home/ec2-user
+        if [ -d "myProject-Actions" ]; then
+          cd myProject-Actions && git pull
+        else
+          git clone https://github.com/tu-usuario/myProject-Actions.git
+        fi
+
+        # Navegar al proyecto y levantar los contenedores
+        cd myProject-Actions
+        docker-compose up -d
+        EOF
+
