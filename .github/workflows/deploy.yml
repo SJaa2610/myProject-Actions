@@ -45,9 +45,12 @@ jobs:
           docker rm $CONTAINERS
         fi
 
-        echo "Desplegando aplicación..."
+        echo "Actualizando contenedor..."
         cd myProject-Actions
-        docker-compose up -d
+        # Si usas docker-compose, asegúrate de actualizar la imagen antes de correr el contenedor
+        docker-compose pull  # Esto actualizará las imágenes
+        docker-compose up -d  # Levanta los contenedores en segundo plano
+
         echo "Despliegue completado."
         EOF
 
