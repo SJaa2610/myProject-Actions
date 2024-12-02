@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 
 
     steps:
     # 1. Descargar el código del repositorio
@@ -18,7 +18,7 @@ jobs:
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
-         ssh-private-key: ${{ secrets.EC2_SSH_KEY }  # Llave privada cargada como secreto en GitHub.
+         ssh-private-key: ${{ secrets.EC2_SSH_KEY }}  # Llave privada cargada como secreto en GitHub.
 
     # 3. Conectar y desplegar en la instancia EC2
     - name: Deploy to EC2
