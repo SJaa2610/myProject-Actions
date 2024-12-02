@@ -19,7 +19,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@3.80.221.241 << 'EOF'
+        ssh -o StrictHostKeyChecking=no ec2-user@54.82.45.96 << 'EOF'
         # Navegar al directorio del proyecto
         cd /home/ec2-user/myProject-Actions
         
