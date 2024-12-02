@@ -6,8 +6,7 @@ RUN rm -rf /usr/share/nginx/html/*
 
 # Copia solo los archivos de tu proyecto web (HTML, CSS, JS)
 COPY index.html /usr/share/nginx/html/
-COPY css/ /usr/share/nginx/html/css/
-COPY js/ /usr/share/nginx/html/js/
+COPY styless.css /usr/share/nginx/html
 # Agrega cualquier otro directorio o archivo necesario
 
 # Expone el puerto 80 para que sea accesible
