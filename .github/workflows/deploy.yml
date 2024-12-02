@@ -1,53 +1,40 @@
 name: Deploy to EC2
-
 on:
   push:
     branches:
-      - main  # Cambia si usas otra rama como principal.
-
+      - main
 jobs:
   deploy:
-    runs-on: ubuntu-22.04  # Usa una versión específica de Ubuntu.
-
+    runs-on: ubuntu-22.04
     steps:
-    # 1. Checkout del repositorio
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # 2. Configurar conexión SSH
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-    # 3. Desplegar en la instancia EC2
     - name: Deploy to EC2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        echo "Conectándose a la instancia EC2..."
         ssh -o StrictHostKeyChecking=no ec2-user@3.80.221.241 << 'EOF'
-        echo "Conexión SSH establecida."
+        # Navegar al directorio del proyecto
+        cd /home/ec2-user/myProject-Actions
         
-        # Verificar si ya existe el repositorio y actualizarlo o clonarlo
-        cd /home/ec2-user
-        if [ -d "myProject-Actions" ]; then
-          echo "Repositorio ya existe, actualizando..."
-          cd myProject-Actions && git pull
-        else
-          echo "Clonando repositorio..."
-          git clone https://github.com/SJaa2610/myProject-Actions.git
-        fi
+        # Asegurarse de estar en la rama main y obtener los últimos cambios
+        git checkout main
+        git fetch origin main
+        git reset --hard origin/main
         
-        echo "Deteniendo y eliminando contenedores existentes si los hay..."
-        # Detener y eliminar contenedores si existen
-        CONTAINERS=$(docker ps -q)
-        if [ -n "$CONTAINERS" ]; then
-          docker stop $CONTAINERS
-          docker rm $CONTAINERS
-        fi
-
-        echo "Desplegando aplicación..."
-        cd myProject-Actions
+        # Reconstruir las imágenes Docker
+        docker-compose down
+        docker-compose build --no-cache
         docker-compose up -d
-        echo "Despliegue completado."
+        
+        # Limpiar imágenes huérfanas
+        docker image prune -f
+        
+        echo "Despliegue completado exitosamente."
         EOF
-
