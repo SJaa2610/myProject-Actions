@@ -3,14 +3,14 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # Ejecutar el flujo cuando haya cambios en la rama main.
+      - main  # Cambia si usas otra rama como principal.
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04 
+    runs-on: ubuntu-22.04  # Usa una versión específica de Ubuntu.
 
     steps:
-    # 1. Descargar el código del repositorio
+    # 1. Checkout del repositorio
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -18,26 +18,36 @@ jobs:
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
-         ssh-private-key: ${{ secrets.EC2_SSH_KEY }}  # Llave privada cargada como secreto en GitHub.
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-    # 3. Conectar y desplegar en la instancia EC2
+    # 3. Desplegar en la instancia EC2
     - name: Deploy to EC2
       run: |
+        echo "Conectándose a la instancia EC2..."
         ssh -o StrictHostKeyChecking=no ec2-user@3.80.221.241 << 'EOF'
-        # Detener cualquier contenedor previo
-        docker stop $(docker ps -q) || true
-        docker rm $(docker ps -a -q) || true
+        echo "Conexión SSH establecida."
         
-        # Actualizar el repositorio o clonarlo si no existe
-        cd /home/ec2-user || mkdir /home/ec2-user && cd /home/ec2-user
+        # Verificar si ya existe el repositorio y actualizarlo o clonarlo
+        cd /home/ec2-user
         if [ -d "myProject-Actions" ]; then
+          echo "Repositorio ya existe, actualizando..."
           cd myProject-Actions && git pull
         else
-          git clone https://github.com/tu-usuario/myProject-Actions.git
+          echo "Clonando repositorio..."
+          git clone https://github.com/SJaa2610/myProject-Actions.git
+        fi
+        
+        echo "Deteniendo y eliminando contenedores existentes si los hay..."
+        # Detener y eliminar contenedores si existen
+        CONTAINERS=$(docker ps -q)
+        if [ -n "$CONTAINERS" ]; then
+          docker stop $CONTAINERS
+          docker rm $CONTAINERS
         fi
 
-        # Navegar al proyecto y levantar los contenedores
+        echo "Desplegando aplicación..."
         cd myProject-Actions
         docker-compose up -d
+        echo "Despliegue completado."
         EOF
 
